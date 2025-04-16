@@ -9,4 +9,10 @@ recNat c base step (suc n) = step n (recNat c base step n)
  
 
 add : ℕ → ℕ → ℕ
-add = recNat (ℕ → ℕ) (λ y → y) (λ _ f → (λ y → suc (f y)))
+add = recNat (ℕ → ℕ) (λ n → n) (λ _ g → (λ n → suc (g n)))
+
+
+
+
+
+
