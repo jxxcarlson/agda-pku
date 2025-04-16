@@ -9,7 +9,16 @@ open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Relation.Nullary using (¬_)
 
 ---------------------------------------------------------------------------
--- Decidable equality for ℕ
+-- A simple transport function.
+-- Given a family P over A, if x ≡ y then any element of P x can be
+-- transported to an element of P y.
+---------------------------------------------------------------------------
+transport :
+  ∀ {A : Set} {P : A → Set} {x y : A} → x ≡ y → P x → P y
+transport refl p = p
+
+---------------------------------------------------------------------------
+-- Decidable equality for ℕ.
 ---------------------------------------------------------------------------
 _≟_ : (m n : ℕ) → (m ≡ n) ⊎ ¬ (m ≡ n)
 zero ≟ zero = inj₁ refl
@@ -23,10 +32,9 @@ suc m ≟ suc n with m ≟ n
     suc-injective refl = refl
 
 ---------------------------------------------------------------------------
--- Postulate dec-refl
---
--- For any type A with decidable equality dec, this postulate states that
--- for every a : A the decision on a ≡ a is exactly inj₁ refl.
+-- Postulate dec-refl.
+-- For any type A with a decidable equality dec, this states that for every
+-- a : A the decision on a ≡ a is exactly inj₁ refl.
 ---------------------------------------------------------------------------
 postulate
   dec-refl : ∀ {A : Set}
@@ -34,13 +42,10 @@ postulate
              {a : A} → dec a a ≡ inj₁ refl
 
 ---------------------------------------------------------------------------
--- Canonicalization function.
+-- Canonicalization.
 --
--- Given a decidable equality dec, for any proof p : a ≡ b, we define
---
---     canon dec p
---
--- by case–analysis on dec a b.
+-- Given a decidable equality dec, for any proof p : a ≡ b we “canonicalize”
+-- it by case–analysis on dec a b.
 ---------------------------------------------------------------------------
 canon :
   ∀ {A : Set}
@@ -54,40 +59,44 @@ canon dec {a} {b} p with dec a b
 ---------------------------------------------------------------------------
 -- Canonicalization equation.
 --
--- For any a : A and p : a ≡ a we have:
---
---     p ≡ canon dec p
+-- For any proof p : a ≡ a we show that p is equal to its canonical form.
+-- (Here we make the base point explicit to get "a" in scope.)
 ---------------------------------------------------------------------------
 canon-eq :
   ∀ {A : Set}
     (dec : ∀ (x y : A) → (x ≡ y) ⊎ ¬ (x ≡ y))
-    {a : A} →
+    (a : A) →
     (p : a ≡ a) → p ≡ canon dec p
-canon-eq dec refl rewrite dec-refl dec {a} = refl
+canon-eq dec a refl rewrite dec-refl dec {a = a} = refl
 
 ---------------------------------------------------------------------------
 -- Hedberg's Theorem (UIP).
 --
--- If a type A has decidable equality then any two proofs of equality
--- between two elements are equal.
+-- If a type A has decidable equality then any two proofs of equality between
+-- two elements are equal.
+--
+-- The idea is to “rebase” an arbitrary equality proof p : a ≡ b to a proof
+-- of a reflexive equality on a. Here we use transport to convert any p : a ≡ b
+-- into a proof of a ≡ a, and then apply canon-eq.
 ---------------------------------------------------------------------------
 hedberg :
   ∀ {A : Set}
     (dec : ∀ (x y : A) → (x ≡ y) ⊎ ¬ (x ≡ y))
     → ∀ {a b : A} (p q : a ≡ b) → p ≡ q
-hedberg {A = A₀} dec {a = a} {b = b} p q =
-  trans (canon-eq dec p′) (sym (canon-eq dec q′))
-  where
+hedberg dec {a} {b} p q =
+  let
+    -- Using transport along p, we “rebase” p to a reflexive proof:
     p′ : a ≡ a
-    p′ = trans (sym p) p
+    p′ = transport (λ x → a ≡ x) p p
 
     q′ : a ≡ a
-    q′ = trans (sym q) q
+    q′ = transport (λ x → a ≡ x) q q
+  in trans (canon-eq dec a p′) (sym (canon-eq dec a q′))
 
 ---------------------------------------------------------------------------
--- UIP for ℕ
+-- UIP for ℕ.
 --
--- Specialized to natural numbers using the decidable equality _≟_.
+-- Specialize Hedberg's theorem to ℕ using the decidable equality _≟_.
 ---------------------------------------------------------------------------
 uip : ∀ {m n : ℕ} → (p q : m ≡ n) → p ≡ q
 uip {m} {n} p q = hedberg _≟_ p q
