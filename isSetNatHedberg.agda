@@ -1,4 +1,4 @@
-{-# OPTIONS --without-K #-}
+ç
 module isSetNatHedberg where
 
 open import Data.Nat using (ℕ; zero; suc)
@@ -35,4 +35,4 @@ uip {zero} {zero} p q with zero ≟ zero
 uip {zero} {suc n} p q with zero ≟ suc n
 ... | inj₁ e = {! !}
 ... | inj₂ ne = ⊥-elim (ne p)
-uip {suc m} {n} p q = {! !} 
+uip {suc m} {n} p q = {! !}

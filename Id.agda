@@ -1,4 +1,4 @@
-module Nat where
+module Id where
 
 
 data ℕ : Set where

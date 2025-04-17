@@ -22,8 +22,6 @@ hedberg dec x y p q with dec x y
 ... | yes r = trans (normalize r p) (sym (normalize r q))
 ... | no ¬r = ⊥-elim (¬r p)
 
-
-
 -- Injectivity of suc
 cong-from-suc : ∀ {m n : ℕ} → suc m ≡ suc n → m ≡ n
 cong-from-suc refl = refl
@@ -40,3 +38,5 @@ decEqℕ (suc m) (suc n) with decEqℕ m n
 -- Finally: ℕ is a set
 isSetℕ : isSet ℕ
 isSetℕ = hedberg decEqℕ
+
+
