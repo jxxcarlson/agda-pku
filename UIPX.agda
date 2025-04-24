@@ -1,9 +1,3 @@
-------------------------------------------------------------------------
--- The Agda standard library
---
--- Results concerning uniqueness of identity proofs
-------------------------------------------------------------------------
-
 {-# OPTIONS --cubical-compatible --safe #-}
 
 module UIPX where
@@ -19,32 +13,17 @@ open import Relation.Binary.Definitions
 open import Relation.Binary.PropositionalEquality.Core
   using (_≡_; refl; trans; sym; cong)
 open import Relation.Binary.PropositionalEquality.Properties
+
 private
   variable
     a : Level
     A : Set a
     x y : A
-
-------------------------------------------------------------------------
--- Definition
---
--- Uniqueness of Identity Proofs (UIP) states that all proofs of
--- equality are themselves equal. In other words, the equality relation
--- is irrelevant. Here we define UIP relative to a given type.
-
+  
 UIP : (A : Set a) → Set a
 UIP A = Irrelevant {A = A} _≡_
 
-------------------------------------------------------------------------
--- Properties
 
--- UIP always holds when using axiom K
--- (see `Axiom.UniquenessOfIdentityProofs.WithK`).
-
--- The existence of a constant function over proofs of equality for
--- elements in A is enough to prove UIP for A. Indeed, we can relate any
--- proof to its image via this function which we then know is equal to
--- the image of any other proof.
 
 module Constant⇒UIP
   (f : _≡_ {A = A} ⇒ _≡_)
@@ -62,17 +41,40 @@ module Constant⇒UIP
     q                          ∎
     where open ≡-Reasoning
 
--- If equality is decidable for a given type, then we can prove UIP for
--- that type. Indeed, the decision procedure allows us to define a
--- function over proofs of equality which is constant: it returns the
--- proof produced by the decision procedure.
+
 
 module Decidable⇒UIP (_≟_ : DecidableEquality A)
   where
-
+ 
+  -- This function takes a proof x≡y of equality between 
+  -- elements x and y of type A, and returns a canonical 
+  -- proof of x ≡ y by recomputing it using the decision 
+  -- procedure x ≟ y.
   ≡-normalise : _≡_ {A = A} ⇒ _≡_
   ≡-normalise {x} {y} x≡y = recompute (x ≟ y) x≡y
-
+  
+  -- This function asserts that for any two proofs 
+  -- p and q of equality between elements x and y of 
+  -- type A, their normalized forms obtained via 
+  -- ≡-normalise are equal. In other words, ≡-normalise 
+  -- is a function that maps all proofs of x ≡ y to 
+  -- a unique, canonical proof. This is where it is 
+  -- shown that a type satisfying decidable equality 
+  -- also satisfies compressible identity.
+  --
+  -- ≡-normalise-constant holds 
+  -- because of the properties of the recompute function. 
+  -- According to the Agda standard library documentation, 
+  -- recompute ensures that for any two proofs p and q 
+  -- of a decidable proposition, 
+  --
+  --   recompute a? p ≡ recompute a? q holds, 
+  -- 
+  -- where a? is the decision procedure for the 
+  -- proposition. This property is formalized in the 
+  -- lemma recompute-constant in 
+  -- the Relation.Nullary.Decidable.Core module.
+  --
   ≡-normalise-constant : (p q : x ≡ y) → ≡-normalise p ≡ ≡-normalise q
   ≡-normalise-constant {x} {y} p q = refl
 
